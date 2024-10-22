@@ -29,6 +29,7 @@ SIMPLE_JWT = {
 
 # Application definition
 
+AUTH_USER_MODEL = 'useraccount.User'
 
 REST_FRAMEWORK = {  
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -93,8 +94,8 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'startup',
-    'founder'
-
+    'founder',
+    'useraccount'
 ]
 
 MIDDLEWARE = [
