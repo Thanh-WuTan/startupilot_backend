@@ -20,7 +20,7 @@ class BatchSerializer(serializers.ModelSerializer):
 class StartupSerializer(serializers.ModelSerializer):
     categories = CategorySerializer(many=True)
     founders = FounderSerializer(many=True)
-    batch = Batch(many=False)
+    batch = BatchSerializer(many=False)
 
     class Meta:
         model = Startup

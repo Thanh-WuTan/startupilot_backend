@@ -1,26 +1,19 @@
-# from django.contrib import admin
-
-# # Register your models here.
-# from .models import Startup
-
-# admin.site.register(Startup)
-
-
 from django.contrib import admin
-from .models import Startup, Category, Founder, Batch
-from .forms import StartupForm
+from .models import Startup, Category, Founder, Batch 
 
-# Inline for Founder
-class FounderInline(admin.TabularInline):  # You can also use admin.StackedInline for a different layout
-    model = Startup.founders.through  # Use the through model for ManyToMany relations
-    extra = 1  # Number of empty forms to display
+class BatchAdmin(admin.ModelAdmin):
+    search_fields = ['name']  # Enable search by batch name
 
-# Inline for Category
+class FounderInline(admin.TabularInline): 
+    model = Startup.founders.through
+    extra = 1 
+
 class CategoryInline(admin.TabularInline):
     model = Startup.categories.through
     extra = 1
 
 class StartupAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
     inlines = [FounderInline, CategoryInline]  # Include the inlines
     exclude = ('founders', 'categories')  # To prevent showing both the inlines and the many-to-many widget
 
@@ -29,8 +22,4 @@ class StartupAdmin(admin.ModelAdmin):
 admin.site.register(Startup, StartupAdmin)
 admin.site.register(Category)
 admin.site.register(Founder)
-
-class BatchAdmin(admin.ModelAdmin):
-    search_fields = ['name']  # Enable search by batch name
-
 admin.site.register(Batch, BatchAdmin)

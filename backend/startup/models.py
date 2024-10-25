@@ -37,19 +37,25 @@ class Startup(models.Model):
         ('inactive', 'Inactive'),
     ]
 
+    PRIORITY_CHOICES = [
+        ('P0', 'P0'),
+        ('P1', 'P1'),
+    ]
+
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
-    short_description = models.CharField(max_length=500)
-    description = models.TextField()
-    phase = models.CharField(max_length=20, choices=PHASE_CHOICES)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
-    contact_email = models.EmailField(unique=True)
+    short_description = models.TextField(max_length=500, null=True, blank=True)
+    description = models.TextField(max_length=10000, null=True, blank=True)
+    phase = models.CharField(max_length=50, choices=PHASE_CHOICES, null=True, blank=True)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, null=True, blank=True)
+    priority = models.CharField(max_length=50, choices=PRIORITY_CHOICES, null=True, blank=True)
+    contact_email = models.EmailField(unique=True, null=True, blank=True)
     linkedin_url = models.URLField(null=True, blank=True)
     facebook_url = models.URLField(null=True, blank=True)
-    categories = models.ManyToManyField(Category, related_name="startups")
-    founders = models.ManyToManyField(Founder, related_name="startups")
+    categories = models.ManyToManyField(Category, related_name="startups", null=True, blank=True)
+    founders = models.ManyToManyField(Founder, related_name="startups", null=True, blank=True)
     batch = models.ForeignKey(Batch, related_name="startups", on_delete=models.CASCADE, null=True, blank=True)
-    pitch_deck = models.FileField(upload_to='pitchdecks/')
-
+    pitch_deck = models.FileField(upload_to='pitchdecks/', null=True, blank=True)
     def __str__(self):
         return self.name
