@@ -6,13 +6,14 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from ...models import Startup, Founder, Batch, Category
 from .serializers import StartupSerializer
+from .service import filter_startups
+
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def startups_list(request):
     startups = Startup.objects.all()
-
-    # Filter
+    categories_names = request.GET.getlist('categories_names', [])
     categories_names = request.GET.getlist('categories_names', [])
     founders_names = request.GET.getlist('founders_names', [])
     batch_name = request.GET.get('batch_name', '')
@@ -20,37 +21,17 @@ def startups_list(request):
     status = request.GET.get('status', '')
     priority = request.GET.get('priority', '')
 
-    for startup in startups:
-        print(startup.name, startup.status)
-
-    # Filtering startups based on query parameters
-    if categories_names:
-        startups = startups.filter(categories__name__in=categories_names).distinct()
-
-    if founders_names:
-        startups = startups.filter(founders__name__in=founders_names).distinct()
-
-   
-    if batch_name:
-        # Filter startups by batch name
-        startups = startups.filter(batch__name=batch_name)
-
-
-    if phase:
-        startups = startups.filter(phase=phase)
-
-    if status:
-        startups = startups.filter(status=status)
-
-    if priority:
-        startups = startups.filter(priority=priority)
+    startups = filter_startups(
+        queryset=startups,
+        categories_names=categories_names,  
+        batch_name=batch_name,
+        phase=phase,
+        status=status,
+        priority=priority
+    )
 
     serializer = StartupSerializer(startups, many=True)
-
-    return JsonResponse({
-        'data': serializer.data,
-    })
-
+    return JsonResponse({'data': serializer.data})
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
