@@ -2,7 +2,12 @@ from django.contrib import admin
 from .models import Startup, Category, Founder, Batch 
 
 class BatchAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
     search_fields = ['name']  # Enable search by batch name
+
+class FounderAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    search_fields = ['name']  # Enable search by founder name
 
 class FounderInline(admin.TabularInline): 
     model = Startup.founders.through
@@ -21,5 +26,5 @@ class StartupAdmin(admin.ModelAdmin):
 
 admin.site.register(Startup, StartupAdmin)
 admin.site.register(Category)
-admin.site.register(Founder)
+admin.site.register(Founder, FounderAdmin)
 admin.site.register(Batch, BatchAdmin)

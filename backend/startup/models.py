@@ -10,12 +10,21 @@ class Category(models.Model):
 
 class Founder(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
+    name = models.CharField(max_length=100)
+    email = models.EmailField(null=True, blank=True)
+    shorthand = models.CharField(unique=True, max_length=200, null=True, blank=True)
+    
+    def save(self, *args, **kwargs):
+        if self.email: 
+            self.shorthand = f"{self.name}({self.email})"
+        else:
+            self.shorthand = self.name  
+        super().save(*args, **kwargs)  
 
+    class Meta:
+        unique_together = (('name', 'email'),) 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return self.name
     
 class Batch(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -26,15 +35,15 @@ class Batch(models.Model):
 
 class Startup(models.Model):
     PHASE_CHOICES = [
-        ('brainstorming', 'Brainstorming'),
-        ('fundraising', 'Fundraising'),
-        ('scaling', 'Scaling'),
-        ('established', 'Established'),
+        ('Brainstorming', 'Brainstorming'),
+        ('Fundraising', 'Fundraising'),
+        ('Scaling', 'Scaling'),
+        ('Established', 'Established'),
     ]
 
     STATUS_CHOICES = [
-        ('active', 'Active'),
-        ('inactive', 'Inactive'),
+        ('Active', 'Active'),
+        ('Inactive', 'Inactive'),
     ]
 
     PRIORITY_CHOICES = [
@@ -50,7 +59,7 @@ class Startup(models.Model):
     phase = models.CharField(max_length=50, choices=PHASE_CHOICES, null=True, blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, null=True, blank=True)
     priority = models.CharField(max_length=50, choices=PRIORITY_CHOICES, null=True, blank=True)
-    contact_email = models.EmailField(unique=True, null=True, blank=True)
+    contact_email = models.EmailField(null=True, blank=True)
     linkedin_url = models.URLField(null=True, blank=True)
     facebook_url = models.URLField(null=True, blank=True)
     categories = models.ManyToManyField(Category, related_name="startups", null=True, blank=True)
