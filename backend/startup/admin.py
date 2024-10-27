@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Startup, Category, Founder, Batch 
+from .models import Startup, Category, Founder, Batch, Avatar, Pitchdeck
 
 class BatchAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
@@ -24,6 +24,8 @@ class StartupAdmin(admin.ModelAdmin):
 
     autocomplete_fields = ['batch']
 
+admin.site.register(Avatar)
+admin.site.register(Pitchdeck)
 admin.site.register(Startup, StartupAdmin)
 admin.site.register(Category)
 admin.site.register(Founder, FounderAdmin)

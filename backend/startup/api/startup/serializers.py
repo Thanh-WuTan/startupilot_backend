@@ -1,40 +1,43 @@
 from rest_framework import serializers
-from ...models import Startup, Category, Founder, Batch
-
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ['id', 'name']
-
-class FounderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Founder
-        fields = ['id', 'name', 'email']
-
-class BatchSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Batch
-        fields = ['id', 'name']
+from ...models import Startup, Category, Founder, Batch, Avatar, Pitchdeck
 
 class StartupSerializer(serializers.ModelSerializer):
     founders = serializers.SlugRelatedField(
         many=True, 
         slug_field='shorthand', 
         queryset=Founder.objects.all(),
-        required=False
+        required=False,
+        allow_null=True
     )
     categories = serializers.SlugRelatedField(
         many=True, 
         slug_field='name', 
         queryset=Category.objects.all(),
-        required=False
+        required=False,
+        allow_null=True
     )
 
     batch = serializers.SlugRelatedField(
         slug_field='name',
         queryset=Batch.objects.all(),
-        required=False
+        required=False,
+        allow_null=True
     )
+    
+    pitch_deck = serializers.SlugRelatedField(
+        slug_field='name',   # Use the UUID as the slug field
+        queryset=Pitchdeck.objects.all(),
+        required=False,
+        allow_null=True
+    )
+    
+    avatar = serializers.SlugRelatedField(
+        slug_field='name',   # Use the UUID as the slug field
+        queryset=Avatar.objects.all(),
+        required=False,
+        allow_null=True
+    )
+
     
     class Meta:
         model = Startup
@@ -52,6 +55,7 @@ class StartupSerializer(serializers.ModelSerializer):
             'founders',
             'categories',
             'batch',      # Allow batch name input
-            'pitch_deck'
+            'pitch_deck',
+            'avatar'
         ]
         

@@ -4,4 +4,4 @@ __pycache__
 .git
 backend/media/pitchdecks
 backend/media/export
-
+backend/media/avatar
