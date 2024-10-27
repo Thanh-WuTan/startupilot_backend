@@ -101,7 +101,7 @@ def create_startup(data):
 
 
     # Handle avatar:
-    avatar_url = data.pop("avatar", "/media/avatar/default_9kV34NX.png")
+    avatar_url = data.pop("avatar", "/media/avatar/default.png")
     avatar = get_avatar_by_url(avatar_url)
 
     # Handle pitchdeck
