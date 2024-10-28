@@ -5,3 +5,4 @@ __pycache__
 backend/media/pitchdecks
 backend/media/export
 backend/media/avatar
+backend/startup/migrations

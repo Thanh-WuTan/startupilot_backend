@@ -13,6 +13,7 @@ from .service import filter_startups, get_startup_by_id, create_startup
 @permission_classes([AllowAny])
 def startups_list(request):
     startups = Startup.objects.all()
+    query = request.GET.get('query', '')
     categories_names = request.GET.getlist('categories_names', [])
     categories_names = request.GET.getlist('categories_names', [])
     batch_name = request.GET.get('batch_name', '')
@@ -21,6 +22,7 @@ def startups_list(request):
     priority = request.GET.get('priority', '')
 
     startups = filter_startups(
+        query = query,
         queryset=startups,
         categories_names=categories_names,  
         batch_name=batch_name,

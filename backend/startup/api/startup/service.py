@@ -22,6 +22,7 @@ def get_startup_by_id(pk):
         return None
 
 def filter_startups(queryset,
+    query=None,
     categories_names=None, 
     batch_name=None,
     phase=None,
@@ -31,6 +32,9 @@ def filter_startups(queryset,
     """
     Filters startups based on the provided parameters.
     """
+    if query:
+        queryset = queryset.filter(name__icontains=query)
+
     if categories_names: 
         queryset = queryset.filter(categories__name__in=categories_names) \
                            .annotate(num_categories=Count('categories', filter=Q(categories__name__in=categories_names))) \
