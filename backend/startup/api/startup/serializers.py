@@ -1,12 +1,5 @@
 from rest_framework import serializers
-from ...models.startup_model import Startup
-from ...models.category_model import Category
-from ...models.batch_model import Batch
-from ...models.avatar_model import Avatar
-from ...models.pitchdeck_model import Pitchdeck
-from ...models.startupmembership_model import StartupMembership
-from ...models.role_model import Role
-from ...models.note_model import Note
+from ...models import Startup, StartupMembership, Role, Category, Batch, Pitchdeck, Avatar, Note, Phase, Status, Priority, Role, Advisor
 
 class StartupMembershipSerializer(serializers.ModelSerializer): 
     id = serializers.UUIDField(source='person.id')
@@ -19,7 +12,7 @@ class StartupMembershipSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StartupMembership
-        fields = ['id', 'role']
+        fields = ['name', 'role']
 
 
 class StartupSerializer(serializers.ModelSerializer): 
@@ -52,6 +45,7 @@ class StartupSerializer(serializers.ModelSerializer):
     )
 
     avatar = serializers.SlugRelatedField(
+        many=True,
         slug_field='id',
         queryset=Avatar.objects.all(),
         required=False,
@@ -59,6 +53,13 @@ class StartupSerializer(serializers.ModelSerializer):
     )
 
     notes = serializers.PrimaryKeyRelatedField(queryset=Note.objects.all(), many=True)
+
+    advisor = serializers.SlugRelatedField(
+        slug_field='name',
+        queryset=Advisor.objects.all(),
+        required=False,
+        allow_null=True
+    )
 
     class Meta:
         model = Startup 
@@ -78,5 +79,6 @@ class StartupSerializer(serializers.ModelSerializer):
             'members',
             'pitch_deck',
             'avatar',
-            'notes'
+            'notes',
+            'advisor'
         ]
