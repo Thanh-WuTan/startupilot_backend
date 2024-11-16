@@ -1,9 +1,15 @@
 from rest_framework import serializers
-from ...models import Startup, Category, Batch, Avatar, Pitchdeck, StartupMembership, Role
+from ...models.startup_model import Startup
+from ...models.category_model import Category
+from ...models.batch_model import Batch
+from ...models.avatar_model import Avatar
+from ...models.pitchdeck_model import Pitchdeck
+from ...models.startupmembership_model import StartupMembership
+from ...models.role_model import Role
+from ...models.note_model import Note
 
-class StartupMembershipSerializer(serializers.ModelSerializer):
-    # Display the shorthand for each person and their roles as a list of strings
-    shorthand = serializers.CharField(source='person.shorthand')
+class StartupMembershipSerializer(serializers.ModelSerializer): 
+    id = serializers.UUIDField(source='person.id')
     role = serializers.SlugRelatedField(
         many=True,
         slug_field='name',
@@ -13,10 +19,10 @@ class StartupMembershipSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StartupMembership
-        fields = ['shorthand', 'role']
+        fields = ['id', 'role']
 
-class StartupSerializer(serializers.ModelSerializer):
-    # Use the custom serializer for the members field
+
+class StartupSerializer(serializers.ModelSerializer): 
     members = StartupMembershipSerializer(source='startupmembership_set', many=True, read_only=True)
 
     categories = serializers.SlugRelatedField(
@@ -27,6 +33,10 @@ class StartupSerializer(serializers.ModelSerializer):
         allow_null=True
     )
 
+    phase = serializers.CharField(source='phase.name', read_only=True)
+    status = serializers.CharField(source='status.name', read_only=True)
+    priority = serializers.CharField(source='priority.name', read_only=True)
+
     batch = serializers.SlugRelatedField(
         slug_field='name',
         queryset=Batch.objects.all(),
@@ -35,35 +45,38 @@ class StartupSerializer(serializers.ModelSerializer):
     )
 
     pitch_deck = serializers.SlugRelatedField(
-        slug_field='name',
+        slug_field='id',
         queryset=Pitchdeck.objects.all(),
         required=False,
         allow_null=True
     )
 
     avatar = serializers.SlugRelatedField(
-        slug_field='name',
+        slug_field='id',
         queryset=Avatar.objects.all(),
         required=False,
         allow_null=True
     )
 
+    notes = serializers.PrimaryKeyRelatedField(queryset=Note.objects.all(), many=True)
+
     class Meta:
-        model = Startup
+        model = Startup 
         fields = [
             'id',
             'name',
             'short_description',
             'description',
+            'email',
+            'categories',
+            'linkedin_url',
+            'facebook_url',
             'phase',
             'status',
             'priority',
-            'contact_email',
-            'linkedin_url',
-            'facebook_url',
-            'members',
-            'categories',
             'batch',
+            'members',
             'pitch_deck',
-            'avatar'
+            'avatar',
+            'notes'
         ]

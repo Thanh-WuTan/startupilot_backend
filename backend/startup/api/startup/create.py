@@ -1,75 +1,12 @@
 from django.db.models import Count, Q
-from ...models import Startup, Founder, Batch, Category, Avatar, Pitchdeck
+from ...models import Startup, Batch, Category, Avatar, Pitchdeck
 from django.core.exceptions import ObjectDoesNotExist
 
 from .serializers import StartupSerializer
 from ..avatar.service import get_avatar_by_url
 from ..pitchdeck.service import get_pitchdeck_by_url
 
-def get_startup_by_id(pk):
-    """
-    Retrieve a Startup instance by its primary key.
-    
-    Args:
-        pk (UUID): The primary key of the Startup instance.
-    
-    Returns:
-        Startup: The retrieved Startup instance or None if not found.
-    """
-    try:
-        return Startup.objects.get(pk=pk)
-    except ObjectDoesNotExist:
-        return None
-
-def filter_startups(queryset,
-    query=None,
-    categories_names=None, 
-    batch_name=None,
-    phase=None,
-    status=None,
-    priority=None
-):
-    """
-    Filters startups based on the provided parameters.
-    """
-    if query:
-        queryset = queryset.filter(name__icontains=query)
-
-    if categories_names: 
-        queryset = queryset.filter(categories__name__in=categories_names) \
-                           .annotate(num_categories=Count('categories', filter=Q(categories__name__in=categories_names))) \
-                           .filter(num_categories=len(categories_names))
-        
-    if batch_name:
-        queryset = queryset.filter(batch__name=batch_name)
-
-    if phase:
-        queryset = queryset.filter(phase=phase)
-
-    if status:
-        queryset = queryset.filter(status=status)
-
-    if priority:
-        queryset = queryset.filter(priority=priority)
-
-    return queryset
-
-def get_column_data(startup, columns):
-    """
-    Collects data for specified columns.
-    """
-    data = {}
-    for column in columns:
-        if column == "categories":
-            data[column] = ", ".join([c.name for c in startup.categories.all()])
-        elif column == "founders":
-            data[column] = ", ".join([f.name for f in startup.founders.all()])
-        elif column == "batch":
-            data[column] = startup.batch.name if startup.batch else ""
-        else:
-            data[column] = getattr(startup, column, "")
-    return data
-
+'''
 def create_startup(data):
     """
     Create a new Startup instance based on the provided data.
@@ -123,3 +60,5 @@ def create_startup(data):
     startup = serializer.save(founders=founder_objects, categories=category_objects)
 
     return serializer.data
+
+'''

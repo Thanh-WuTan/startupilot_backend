@@ -1,6 +1,7 @@
 from django_filters import rest_framework as filters
-from ... models import Startup
 from django.db.models import Count
+
+from ... models.startup_model import Startup
 
 class StartupFilter(filters.FilterSet):
     categories__name = filters.CharFilter(method='filter_categories', distinct=True)

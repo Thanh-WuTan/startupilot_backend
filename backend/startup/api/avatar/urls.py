@@ -1,6 +1,5 @@
 from django.urls import path
-from .api import upload_avatar
-
+from .api import UploadAvatarView
 urlpatterns = [
-    path('upload/', upload_avatar, name='upload_avatar')
+    path('upload/', UploadAvatarView.as_view(), name='upload_avatar')
 ]

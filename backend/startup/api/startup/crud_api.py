@@ -1,20 +1,17 @@
 from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework import generics, filters
+from rest_framework import generics 
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from ...models import Startup
-from .serializers import StartupSerializer
-from django.db.models import Case, When, Value, IntegerField
+from .serializers import StartupSerializer 
 from django_filters.rest_framework import DjangoFilterBackend
-from django.http import Http404
 from rest_framework.filters import SearchFilter
+from django.core.exceptions import ObjectDoesNotExist
 
-from .service import create_startup, get_startup_by_id
-
+from ...models.startup_model import Startup
 
 from .filter import StartupFilter
 
@@ -26,6 +23,8 @@ class StartupListView(generics.ListAPIView):
     filterset_class = StartupFilter
     search_fields = ['$name'] 
 
+
+'''
 class StartupDetailView(RetrieveUpdateDestroyAPIView):
     """
     API endpoint for retrieving, updating, and deleting a single startup.
@@ -36,8 +35,11 @@ class StartupDetailView(RetrieveUpdateDestroyAPIView):
 
     def get_object(self):
         pk = self.kwargs.get("pk")
-        return get_startup_by_id(pk)
-
+        try:
+            return Startup.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return None
+        
     def retrieve(self, request, *args, **kwargs):
         startup = self.get_object()
         if not startup:
@@ -67,3 +69,5 @@ class StartupDetailView(RetrieveUpdateDestroyAPIView):
 
         startup.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+'''

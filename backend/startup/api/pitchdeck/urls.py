@@ -1,6 +1,6 @@
 from django.urls import path
-from .api import upload_pitchdeck
+from .api import UploadPitchdeckView
 
 urlpatterns = [
-    path('upload/', upload_pitchdeck, name='upload_pitchdeck')
+    path('upload-pitchdeck/', UploadPitchdeckView.as_view(), name='upload-pitchdeck'),
 ]
