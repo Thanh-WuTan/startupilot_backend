@@ -102,8 +102,8 @@ def create_startup(data):
     if batch_name:
         batch, created = Batch.objects.get_or_create(name=batch_name)
         data['batch'] = batch
-
-
+    else:
+        batch = None
     # Handle avatar:
     avatar_url = data.pop("avatar", "/media/avatar/default.png")
     avatar = get_avatar_by_url(avatar_url)
