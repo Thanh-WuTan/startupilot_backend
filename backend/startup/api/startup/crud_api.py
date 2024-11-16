@@ -25,13 +25,6 @@ class StartupListView(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = StartupFilter
     search_fields = ['$name'] 
- 
-
-class StartupDetailView(generics.RetrieveAPIView):
-    queryset = Startup.objects.all()   
-    serializer_class = StartupSerializer
-    permission_classes = [AllowAny]  
-
 
 class StartupDetailView(RetrieveUpdateDestroyAPIView):
     """
