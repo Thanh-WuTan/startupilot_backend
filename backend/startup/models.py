@@ -7,24 +7,6 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
-
-class Founder(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=100)
-    email = models.EmailField(null=True, blank=True)
-    shorthand = models.CharField(unique=True, max_length=200, null=True, blank=True)
-    
-    def save(self, *args, **kwargs):
-        if self.email: 
-            self.shorthand = f"{self.name}({self.email})"
-        else:
-            self.shorthand = self.name  
-        super().save(*args, **kwargs)  
-
-    class Meta:
-        unique_together = (('name', 'email'),) 
-    def __str__(self):
-        return self.name
     
 class Batch(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -67,6 +49,33 @@ class Avatar(models.Model):
             self.name = self.avatar.url
             super().save(update_fields=['name'])
 
+
+class Role(models.Model):
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+    
+class Person(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    email = models.EmailField(null=True, blank=True)
+    shorthand = models.CharField(unique=True, max_length=200, null=True, blank=True)
+    
+    def save(self, *args, **kwargs):
+        if self.email: 
+            self.shorthand = f"{self.name}({self.email})"
+        else:
+            self.shorthand = self.name  
+        super().save(*args, **kwargs)  
+
+    class Meta:
+        unique_together = (('name', 'email'),) 
+    def __str__(self):
+        return self.name
+    def __str__(self):
+        return self.name
+
 class Startup(models.Model):
     PHASE_CHOICES = [
         ('Brainstorming', 'Brainstorming'),
@@ -83,6 +92,7 @@ class Startup(models.Model):
     PRIORITY_CHOICES = [
         ('P0', 'P0'),
         ('P1', 'P1'),
+        ('P2', 'P2'),
     ]
 
 
@@ -97,9 +107,18 @@ class Startup(models.Model):
     linkedin_url = models.URLField(null=True, blank=True)
     facebook_url = models.URLField(null=True, blank=True)
     categories = models.ManyToManyField(Category, related_name="startups", null=True, blank=True)
-    founders = models.ManyToManyField(Founder, related_name="startups", null=True, blank=True)
+    members = models.ManyToManyField(Person, through='StartupMembership', related_name='startups')
     batch = models.ForeignKey(Batch, related_name="startups", on_delete=models.CASCADE, null=True, blank=True)
     pitch_deck = models.ForeignKey(Pitchdeck, related_name="startups", on_delete=models.CASCADE, null=True, blank=True)  # Updated field
     avatar = models.ForeignKey(Avatar, related_name="startups", on_delete=models.CASCADE, null=True, blank=True)
     def __str__(self):
         return self.name
+
+
+class StartupMembership(models.Model):
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    startup = models.ForeignKey(Startup, on_delete=models.CASCADE)
+    roles = models.ManyToManyField(Role, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.person.name} at {self.startup.name}"

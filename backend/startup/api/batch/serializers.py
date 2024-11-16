@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ...models import Startup, Category, Founder, Batch
+from ...models import Batch
 
 class BatchSerializer(serializers.ModelSerializer):
     class Meta:

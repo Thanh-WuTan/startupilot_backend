@@ -1,32 +1,52 @@
 from django.contrib import admin
-from .models import Startup, Category, Founder, Batch, Avatar, Pitchdeck
+from django import forms
+from .models import Startup, Category, Batch, Avatar, Pitchdeck, Person, Role, StartupMembership
 
-class BatchAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name')
-    search_fields = ['name']  # Enable search by batch name
+class StartupMembershipForm(forms.ModelForm):
+    class Meta:
+        model = StartupMembership
+        fields = ['person', 'startup', 'roles'] 
 
-class FounderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name')
-    search_fields = ['name']  # Enable search by founder name
+    roles = forms.ModelMultipleChoiceField(
+        queryset=Role.objects.all(),
+        required=False,  
+        widget=forms.CheckboxSelectMultiple, 
+        label="Roles"
+    )
 
-class FounderInline(admin.TabularInline): 
-    model = Startup.founders.through
-    extra = 1 
+class RoleInline(admin.TabularInline):
+    model = StartupMembership.roles.through
+    extra = 1
 
 class CategoryInline(admin.TabularInline):
     model = Startup.categories.through
     extra = 1
 
-class StartupAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name')
-    inlines = [FounderInline, CategoryInline]  # Include the inlines
-    exclude = ('founders', 'categories')  # To prevent showing both the inlines and the many-to-many widget
+class MemberInline(admin.TabularInline):
+    model = Startup.members.through
+    extra = 1  
 
-    autocomplete_fields = ['batch']
+class StartupMembershipInline(admin.TabularInline):
+    model = StartupMembership
+    extra = 1
+    form = StartupMembershipForm  
+    inlines = [RoleInline]  
+
+    autocomplete_fields = ['roles']
+
+class RoleAdmin(admin.ModelAdmin):
+    search_fields = ['name']  
+
+admin.site.register(Role, RoleAdmin)
+
+class StartupAdmin(admin.ModelAdmin):
+    list_display = ('name', 'id')
+    exclude = ('members', 'categories')
+    inlines = [CategoryInline, StartupMembershipInline] 
 
 admin.site.register(Avatar)
+admin.site.register(Person)
 admin.site.register(Pitchdeck)
 admin.site.register(Startup, StartupAdmin)
 admin.site.register(Category)
-admin.site.register(Founder, FounderAdmin)
-admin.site.register(Batch, BatchAdmin)
+admin.site.register(Batch)

@@ -1,17 +1,27 @@
 from rest_framework import serializers
-from ...models import Startup, Category, Founder, Batch, Avatar, Pitchdeck
+from ...models import Startup, Category, Batch, Avatar, Pitchdeck, StartupMembership, Role
+
+class StartupMembershipSerializer(serializers.ModelSerializer):
+    # Display the shorthand for each person and their roles as a list of strings
+    shorthand = serializers.CharField(source='person.shorthand')
+    role = serializers.SlugRelatedField(
+        many=True,
+        slug_field='name',
+        queryset=Role.objects.all(),
+        source='roles'
+    )
+
+    class Meta:
+        model = StartupMembership
+        fields = ['shorthand', 'role']
 
 class StartupSerializer(serializers.ModelSerializer):
-    founders = serializers.SlugRelatedField(
-        many=True, 
-        slug_field='shorthand', 
-        queryset=Founder.objects.all(),
-        required=False,
-        allow_null=True
-    )
+    # Use the custom serializer for the members field
+    members = StartupMembershipSerializer(source='startupmembership_set', many=True, read_only=True)
+
     categories = serializers.SlugRelatedField(
-        many=True, 
-        slug_field='name', 
+        many=True,
+        slug_field='name',
         queryset=Category.objects.all(),
         required=False,
         allow_null=True
@@ -23,26 +33,25 @@ class StartupSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True
     )
-    
+
     pitch_deck = serializers.SlugRelatedField(
-        slug_field='name',   # Use the UUID as the slug field
+        slug_field='name',
         queryset=Pitchdeck.objects.all(),
         required=False,
         allow_null=True
     )
-    
+
     avatar = serializers.SlugRelatedField(
-        slug_field='name',   # Use the UUID as the slug field
+        slug_field='name',
         queryset=Avatar.objects.all(),
         required=False,
         allow_null=True
     )
 
-    
     class Meta:
         model = Startup
         fields = [
-            'id',  # Include id if needed in response
+            'id',
             'name',
             'short_description',
             'description',
@@ -52,10 +61,9 @@ class StartupSerializer(serializers.ModelSerializer):
             'contact_email',
             'linkedin_url',
             'facebook_url',
-            'founders',
+            'members',
             'categories',
-            'batch',      # Allow batch name input
+            'batch',
             'pitch_deck',
             'avatar'
         ]
-        
