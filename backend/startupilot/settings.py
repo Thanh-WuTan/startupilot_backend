@@ -13,7 +13,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
  
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 WEBSITE_URL = 'http://localhost:8000'
 
@@ -109,7 +109,7 @@ INSTALLED_APPS = [
     
     'corsheaders',
 
-    'startup',
+    'core',
     'useraccount'
 ]
 
@@ -184,7 +184,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Ho_Chi_Minh'
 
 USE_I18N = True
 
