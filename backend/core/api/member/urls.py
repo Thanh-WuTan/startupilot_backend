@@ -1,0 +1,8 @@
+from django.urls import path
+
+from .api import MemberListView, MemberDetailView
+
+urlpatterns = [
+    path('', MemberListView.as_view(), name='members-list'),
+    path('<uuid:pk>', MemberDetailView.as_view(), name='member-detail')
+]
