@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   web:
@@ -10,7 +10,7 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - .env  
+      - .env
     depends_on:
       - db
   db:
@@ -21,6 +21,20 @@ services:
       - POSTGRES_USER=${SQL_USER}
       - POSTGRES_PASSWORD=${SQL_PASSWORD}
       - POSTGRES_DB=${SQL_DATABASE}
-      
+  storage:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000" # MinIO console
+      - "9090:9090" # MinIO web interface
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY} # Set your MinIO access key
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY} # Set your MinIO secret key
+    volumes:
+      - minio-data:/data
+    command: server --address ":9000" /data --console-address ":9090"
+
 volumes:
   postgres_data:
+    driver: local
+  minio-data:
+    driver: local

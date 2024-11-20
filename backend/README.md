@@ -24,8 +24,11 @@ SQL_PASSWORD=postgrespassword
 SQL_HOST=db
 SQL_PORT=5432
 DATABASE=postgres
+MINIO_URL=storage:9000
+MINIO_ACCESS_KEY=minioaccess
+MINIO_SECRET_KEY=miniosecret
+MINIO_BUCKET_NAME=elabweb
 ```
-
 
 ### 3. Run the Docker Container
 
@@ -34,6 +37,7 @@ Please, ensure that your Docker Desktop is on. Then, to build and run the backen
 ```bash
 docker-compose up --build -d
 ```
-> **Note:**  The --build flag is required each time you pull the repository to ensure any new changes are built into the container.
+
+> **Note:** The --build flag is required each time you pull the repository to ensure any new changes are built into the container.
 
 After the container is up, the backend server will be running at [http://localhost:8000](http://localhost:8000).
