@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ..models import Startup, Category, Batch, Avatar, Pitchdeck, StartupMembership, Role, Note
+from ..models import Startup, Category, Batch, StartupMembership, Role, Note
 
 class StartupMembershipSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source='person.id')
@@ -32,20 +32,6 @@ class StartupSerializer(serializers.ModelSerializer):
     batch = serializers.SlugRelatedField(
         slug_field='name',
         queryset=Batch.objects.all(),
-        required=False,
-        allow_null=True
-    )
-
-    pitch_deck = serializers.SlugRelatedField(
-        slug_field='id',
-        queryset=Pitchdeck.objects.all(),
-        required=False,
-        allow_null=True
-    )
-
-    avatar = serializers.SlugRelatedField(
-        slug_field='id',
-        queryset=Avatar.objects.all(),
         required=False,
         allow_null=True
     )
@@ -137,14 +123,7 @@ class ManyStartupSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True
     )
-
-    avatar = serializers.SlugRelatedField(
-        slug_field='id',
-        queryset=Avatar.objects.all(),
-        required=False,
-        allow_null=True
-    )
-
+    
     class Meta:
         model = Startup
         fields = [

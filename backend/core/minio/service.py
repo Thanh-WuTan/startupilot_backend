@@ -3,7 +3,6 @@ import string
 import os
 import re
 
-from ..models.avatar_model import Avatar
 from django.core.files.uploadedfile import UploadedFile
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
@@ -42,41 +41,34 @@ def generate_random_string(length=20) -> str:
     """
     characters = string.ascii_letters + string.digits
     return ''.join(random.choice(characters) for _ in range(length))
-def upload_avatar(file: UploadedFile) -> Avatar:
+
+
+def upload_file(file, file_type, filename):
     """
-    Upload a new avatar image to MinIO and create a new Avatar instance.
-    
-    Args:
-        file (UploadedFile): The file to be saved in the Avatar instance.
-    
-    Returns:
-        Avatar: The created Avatar instance.
+    Upload the file to MinIO and return the file URL.
     """
-    # Check if bucket exists
-    if not minio_client.bucket_exists(BUCKET_NAME):
-        raise ValidationError("Bucket does not exist.")
-    
-    # Sanitize the filename
-    sanitized_name = sanitize_filename(file.name)
-    
-    # Generate a random string name for the file
-    file.name = f"{generate_random_string()}_avatar_{sanitized_name}"
-    
     try:
-        # Save the file to MinIO
+        # Create the file path in the bucket
+        file_path = f"{file_type}/{filename}"
+
+        # Upload the file to MinIO
         minio_client.put_object(
             bucket_name=BUCKET_NAME,
-            object_name=f"{FOLDER_NAME}/{file.name}",
+            object_name=file_path, 
             content_type=file.content_type,
             data=file,
-            length=file.size,
+            length=file.size
         )
+
+        # Return the file URL
+        minio_url = os.getenv('FILE_MINIO_URL', 'http://localhost:9000')  # Default to 'http://minio_server:9000' if the environment variable is not set
+
+        # Construct the file URL
+        file_url = f"{minio_url}/{BUCKET_NAME}/{file_path}"
+        return file_url
+
     except S3Error as e:
-        raise ValidationError(f"S3Error uploading file: {str(e)}")
+        raise Exception(f"Error uploading file to MinIO: {e}")
     except Exception as e:
         raise ValidationError(f"Error uploading file: {str(e)}")
-    
-    avatar_url = f"{os.getenv('FILE_MINIO_URL', 'localhost:9000')}/{BUCKET_NAME}/{FOLDER_NAME}/{file.name}"
-    avatar = Avatar(avatar_url=avatar_url)
-    avatar.save()  # Save the instance to trigger any custom save logic if needed
-    return avatar
+ 

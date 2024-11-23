@@ -7,8 +7,6 @@ from .priority_model import Priority
 from .category_model import Category
 from .person_model import Person
 from .batch_model import Batch
-from .pitchdeck_model import Pitchdeck
-from .avatar_model import Avatar
 from .advisor_model import Advisor
 
 
@@ -27,9 +25,9 @@ class Startup(models.Model):
     batch = models.ForeignKey(Batch, related_name="startups", on_delete=models.CASCADE, null=True, blank=True)
     members = models.ManyToManyField(Person, through='StartupMembership', related_name='startups')
     advisors = models.ManyToManyField(Advisor, related_name="startups", blank=True)
-    pitch_deck = models.ForeignKey(Pitchdeck, related_name="startups", on_delete=models.CASCADE, null=True, blank=True)  # Updated field
-    avatar = models.ForeignKey(Avatar, related_name="startups", on_delete=models.CASCADE, null=True, blank=True)
-    
+    pitch_deck = models.URLField(null=True, blank=True)
+    avatar = models.URLField(null=True, blank=True)
+
     @property
     def all_notes(self):
         return self.notes.all()
