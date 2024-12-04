@@ -11,7 +11,7 @@ class NoteCreateView(APIView):
     """
     Create a new note for a specified content type (Startup or Person).
     """
-    permission_classes = [AllowAny]  # Adjust permission classes as needed
+    permission_classes = [IsAuthenticated]  # Adjust permission classes as needed
 
     def post(self, request):
         content = request.data.get('content')

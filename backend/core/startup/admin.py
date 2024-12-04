@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django import forms
-from ..models import Startup, Role, StartupMembership, Note
+from ..models import Startup, StartupMembership, Note
 from django.contrib.contenttypes.admin import GenericTabularInline
 
 
@@ -11,26 +11,13 @@ class MemberInline(admin.TabularInline):
 class StartupMembershipForm(forms.ModelForm):
     class Meta:
         model = StartupMembership
-        fields = ['person', 'startup', 'roles', 'status'] 
-
-    roles = forms.ModelMultipleChoiceField(
-        queryset=Role.objects.all(),
-        required=False,  
-        widget=forms.CheckboxSelectMultiple, 
-        label="Roles"
-    )
-
-class RoleInline(admin.TabularInline):
-    model = StartupMembership.roles.through
-    extra = 1
+        fields = ['person', 'startup', 'role', 'status'] 
 
 class StartupMembershipInline(admin.TabularInline):
     model = StartupMembership
     extra = 1
     form = StartupMembershipForm  
-    inlines = [RoleInline]  
 
-    autocomplete_fields = ['roles']
 
 class AdvisorInline(admin.TabularInline):
     model = Startup.advisors.through

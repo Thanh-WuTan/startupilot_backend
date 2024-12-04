@@ -8,11 +8,10 @@ class StartupSerializer(serializers.ModelSerializer):
 
 class StartupMembershipSerializer(serializers.ModelSerializer):
     startup = StartupSerializer()
-    roles = serializers.SlugRelatedField(many=True, slug_field='name', read_only=True)
 
     class Meta:
         model = StartupMembership
-        fields = ['id', 'startup', 'roles', 'status']
+        fields = ['id', 'startup', 'role', 'status']
 
 class NoteSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,13 +24,13 @@ class MemberSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Person
-        fields = ['id', 'name', 'email', 'shorthand',  'phone', 'linkedin_url', 'facebook_url', 'memberships', 'notes']
+        fields = ['id', 'name', 'email', 'shorthand',  'phone', 'linkedin_url', 'facebook_url', 'memberships', 'avatar', 'notes']
 
     def get_notes(self, obj):
         notes = Note.objects.filter(content_type__model='person', object_id=obj.id)
         return NoteSerializer(notes, many=True).data
 
-class ManyMemberSerializer(serializers.ModelSerializer):
+class MemberListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Person
-        fields = ['id', 'name', 'email', 'shorthand', 'phone', 'linkedin_url', 'facebook_url']
+        fields = ['id', 'name', 'email', 'shorthand', 'phone', 'linkedin_url', 'facebook_url', 'avatar']

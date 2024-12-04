@@ -1,15 +1,9 @@
 from rest_framework import serializers
-from ..models import Startup, Category, Batch, StartupMembership, Role, Note
+from ..models import Startup, Category, Batch, StartupMembership, Note
 
 class StartupMembershipSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source='person.id')
     name = serializers.CharField(source='person.name')
-    role = serializers.SlugRelatedField(
-        many=True,
-        slug_field='name',
-        queryset=Role.objects.all(),
-        source='roles'
-    )
 
     class Meta:
         model = StartupMembership
@@ -88,7 +82,7 @@ class StartupSerializer(serializers.ModelSerializer):
                     'email': membership.person.email
                 },
                 'status': membership.status,
-                'roles': [role.name for role in membership.roles.all()]
+                'roles': membership.role
             }
             for membership in memberships
         ]

@@ -1,5 +1,8 @@
-from django.contrib import admin
-from django import forms
+from django.contrib import admin 
 from ..models import Phase
 
-admin.site.register(Phase)
+
+class PhaseAdmin(admin.ModelAdmin):
+    list_display = ('name', 'id')
+
+admin.site.register(Phase, PhaseAdmin)

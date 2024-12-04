@@ -3,8 +3,7 @@ from .category_model import Category
 from .note_model import Note
 from .person_model import Person
 from .phase_model import Phase
-from .priority_model import Priority
-from .role_model import Role
+from .priority_model import Priority 
 from .startup_model import Startup
 from .startupmembership_model import StartupMembership
 from .status_model import Status

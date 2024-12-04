@@ -6,7 +6,7 @@ class AdvisorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Advisor
-        fields = ('id', 'name', 'email', 'phone', 'linkedin_url', 'facebook_url', 'shorthand', 'mentorships')
+        fields = ('id', 'name', 'email', 'phone', 'linkedin_url', 'facebook_url', 'shorthand', 'area_of_expertise', 'mentorships')
 
     def get_mentorships(self, obj):
         return [
@@ -18,3 +18,4 @@ class AdvisorSerializer(serializers.ModelSerializer):
             }
             for startup in obj.startups.all()
         ]
+

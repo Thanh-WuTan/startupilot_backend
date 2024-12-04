@@ -2,7 +2,7 @@ import re
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from .service import upload_file, sanitize_filename, generate_random_string
 
@@ -12,7 +12,7 @@ VALID_PDF_TYPES = ['application/pdf']  # Only PDF files allowed
 FILENAME_REGEX = r'^[a-zA-Z0-9._]+$'  # Allow alphanumeric characters, dot and underscore
 
 class UploadFileView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request, *args, **kwargs):

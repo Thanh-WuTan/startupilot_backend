@@ -1,20 +1,13 @@
 from django.contrib import admin
 from django import forms
-from ..models import Person, Role, StartupMembership, Note
+from ..models import Person, StartupMembership, Note
 from django.contrib.contenttypes.admin import GenericTabularInline
 
 
 class StartupMembershipForm(forms.ModelForm):
     class Meta:
         model = StartupMembership
-        fields = ['person', 'startup', 'roles', 'status'] 
-
-    roles = forms.ModelMultipleChoiceField(
-        queryset=Role.objects.all(),
-        required=False,  
-        widget=forms.CheckboxSelectMultiple, 
-        label="Roles"
-    )
+        fields = ['person', 'startup', 'role', 'status'] 
 
 class PersonMembershipInline(admin.TabularInline):
     model = StartupMembership

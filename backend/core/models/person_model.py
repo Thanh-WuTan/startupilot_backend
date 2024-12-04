@@ -9,6 +9,7 @@ class Person(models.Model):
     linkedin_url = models.URLField(null=True, blank=True)
     facebook_url = models.URLField(null=True, blank=True)
     shorthand = models.CharField(unique=True, max_length=510, null=True, blank=True)
+    avatar = models.URLField(null=True, blank=True)
     
     def save(self, *args, **kwargs):
         if self.email: 

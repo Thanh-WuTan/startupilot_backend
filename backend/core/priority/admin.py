@@ -1,4 +1,7 @@
 from django.contrib import admin
 from ..models import Priority
 
-admin.site.register(Priority)
+class PriorityAdmin(admin.ModelAdmin):
+    list_display = ('name', 'id')
+
+admin.site.register(Priority, PriorityAdmin)
