@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ..models import Startup, Category, Batch, StartupMembership, Note
+from ..models import Startup, Category, Batch, StartupMembership, Note, Phase, Status, Priority
 
 class StartupMembershipSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source='person.id')
@@ -19,10 +19,24 @@ class StartupSerializer(serializers.ModelSerializer):
         allow_null=True
     )
 
-    phase = serializers.CharField(source='phase.name', read_only=True)
-    status = serializers.CharField(source='status.name', read_only=True)
-    priority = serializers.CharField(source='priority.name', read_only=True)
-
+    phase = serializers.SlugRelatedField(
+        slug_field='name',
+        queryset=Phase.objects.all(),
+        required=False,
+        allow_null=True
+    )
+    status = serializers.SlugRelatedField(
+        slug_field='name',
+        queryset=Status.objects.all(),
+        required=False,
+        allow_null=True
+    )
+    priority = serializers.SlugRelatedField(
+        slug_field='name',
+        queryset=Priority.objects.all(),
+        required=False,
+        allow_null=True
+    )
     batch = serializers.SlugRelatedField(
         slug_field='name',
         queryset=Batch.objects.all(),

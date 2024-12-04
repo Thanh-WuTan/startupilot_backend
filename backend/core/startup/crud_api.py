@@ -30,27 +30,39 @@ class CreateStartupView(APIView):
                         categories.append(category)
                     except Category.DoesNotExist:
                         return Response({'error': f'Category with id {category_id} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
-                
                 try:
-                    status_instance = Status.objects.get(id=data.get('status'))  # Renamed variable
+                    # Handle status
+                    status_id = data.get('status')
+                    status_instance = Status.objects.get(id=status_id) if status_id else None
+
                 except Status.DoesNotExist:
                     return Response({'error': 'Status does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
 
                 try:
-                    priority = Priority.objects.get(id=data.get('priority'))
+                    # Handle priority
+                    priority_id = data.get('priority')
+                    priority = Priority.objects.get(id=priority_id) if priority_id else None
+
                 except Priority.DoesNotExist:
                     return Response({'error': 'Priority does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
-                 
+
                 try:
-                    batch = Batch.objects.get(id=data.get('batch'))
+                    # Handle batch
+                    batch_id = data.get('batch')
+                    batch = Batch.objects.get(id=batch_id) if batch_id else None
+
                 except Batch.DoesNotExist:
                     return Response({'error': 'Batch does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
-                 
+
                 try:
-                    phase = Phase.objects.get(id=data.get('phase'))
+                    # Handle phase
+                    phase_id = data.get('phase')
+                    phase = Phase.objects.get(id=phase_id) if phase_id else None
+
                 except Phase.DoesNotExist:
                     return Response({'error': 'Phase does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
-                
+
+
                 # Validate members and create StartupMembership instances
                 memberships_data = data.get('memberships', [])
                 memberships = []
@@ -73,54 +85,61 @@ class CreateStartupView(APIView):
                     except Person.DoesNotExist:
                         return Response({'error': f'Person with id {member_id} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
  
-                startup = Startup(
-                    name=data.get('name'),
-                    short_description=data.get('short_description'),
-                    description=data.get('description'),
-                    email=data.get('contact_email'),
-                    linkedin_url=data.get('linkedin_url'),
-                    facebook_url=data.get('facebook_url'),
-                    launch_date=data.get('launch_date'),
-                    pitch_deck=data.get('pitch_deck'),
-                    avatar=data.get('avatar'),
-                    status=status_instance,  # Use the renamed variable
-                    priority=priority, 
-                    batch=batch,
-                    phase=phase
-                )
- 
-                startup.save()
- 
-                startup.categories.set(categories)
-                 
-                for membership in memberships:
-                    membership.startup = startup
-                    membership.save()
-                 
-                mentorship_ids = data.get('mentorships', [])
-                advisors = []
-                processed_advisor_ids = set()  # To track the processed advisor IDs
+                # Create the Startup instance using the serializer
+                startup_data = {
+                    'name': data.get('name'),
+                    'short_description': data.get('short_description'),
+                    'description': data.get('description'),
+                    'email': data.get('contact_email'),
+                    'linkedin_url': data.get('linkedin_url'),
+                    'facebook_url': data.get('facebook_url'),
+                    'launch_date': data.get('launch_date'),
+                    'pitch_deck': data.get('pitch_deck'),
+                    'avatar': data.get('avatar'),
+                    'status': status_instance,  
+                    'priority': priority,       
+                    'batch': batch,       
+                    'phase': phase,           
+                    'categories': category_ids,   
+                    'memberships': memberships,    
+                }
+                
+                # Use the serializer to validate and save the startup
+                serializer = StartupSerializer(data=startup_data)
+                
+                if serializer.is_valid():
+                    startup = serializer.save()  # Save the startup instance
 
-                for advisor_id in mentorship_ids:
-                    if advisor_id in processed_advisor_ids:
-                        return Response({'error': f'Duplicate advisor ID {advisor_id} found.'}, status=status.HTTP_400_BAD_REQUEST)
+                    # Save the memberships
+                    for membership in memberships:
+                        membership.startup = startup
+                        membership.save()
+                 
+                    # Validate mentorships and assign advisors
+                    mentorship_ids = data.get('mentorships', [])
+                    advisors = []
+                    processed_advisor_ids = set()  # To track the processed advisor IDs
+
+                    for advisor_id in mentorship_ids:
+                        if advisor_id in processed_advisor_ids:
+                            return Response({'error': f'Duplicate advisor ID {advisor_id} found.'}, status=status.HTTP_400_BAD_REQUEST)
+                        
+                        try:
+                            advisor = Advisor.objects.get(id=advisor_id)
+                            advisors.append(advisor)
+                            processed_advisor_ids.add(advisor_id)  # Mark this advisor as processed
+                        except Advisor.DoesNotExist:
+                            return Response({'error': f'Advisor with id {advisor_id} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+
+                    startup.advisors.set(advisors)
                     
-                    try:
-                        advisor = Advisor.objects.get(id=advisor_id)
-                        advisors.append(advisor)
-                        processed_advisor_ids.add(advisor_id)  # Mark this advisor as processed
-                    except Advisor.DoesNotExist:
-                        return Response({'error': f'Advisor with id {advisor_id} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-                startup.advisors.set(advisors)
-
-             
-            serializer = StartupSerializer(startup)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
         except Exception as e: 
             return Response({'error': f'Failed to create startup: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
-
+        
 
 class StartupListView(generics.ListAPIView):
     queryset = Startup.objects.all()
