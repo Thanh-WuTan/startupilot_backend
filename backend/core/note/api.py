@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated, AllowAny 
 from .serializers import NoteSerializer  # Assuming you have a serializer for the Note model
 from ..models import Startup, Person, Note
@@ -15,17 +16,19 @@ class NoteCreateView(APIView):
 
     def post(self, request):
         content = request.data.get('content')
-        content_type_id = request.data.get('content_type')
+        content_type_str = request.data.get('content_type')  # Expecting 'startup' or 'person'
         object_id = request.data.get('object_id')
 
-        if not content or not content_type_id or not object_id:
+        if not content or not content_type_str or not object_id:
             return Response({"error": "Content, content_type, and object_id are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Get the ContentType object
-        try:
-            content_type = ContentType.objects.get(id=content_type_id)
-        except ContentType.DoesNotExist:
-            return Response({"error": "Invalid content_type."}, status=status.HTTP_400_BAD_REQUEST)
+        # Map the string content_type to the ContentType model
+        if content_type_str == 'startup':
+            content_type = ContentType.objects.get_for_model(Startup)
+        elif content_type_str == 'member':
+            content_type = ContentType.objects.get_for_model(Person)
+        else:
+            return Response({"error": "Invalid content_type. Must be 'startup' or 'member'."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Check if the object_id exists in the corresponding model
         if content_type.model == 'startup':
@@ -40,8 +43,6 @@ class NoteCreateView(APIView):
                 person = Person.objects.get(id=object_id)
             except Person.DoesNotExist:
                 return Response({"error": "Person not found."}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"error": "Unsupported content type."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Create the note
         note = Note.objects.create(
@@ -81,11 +82,23 @@ class NoteDetailView(APIView):
         note = get_object_or_404(Note, pk=pk)
         
         # Deserialize the request data and validate it
-        serializer = NoteSerializer(note, data=request.data, partial=False)
-        
-        if serializer.is_valid():
-            # Save the updated note
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        content = request.data.get('content')
+
+        if not content:
+            return Response({"error": "Content is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Update the note's content
+        note.content = content
+
+        # Optionally, validate the content length if necessary
+        try:
+            note.clean()  # This will call the clean method to ensure no word limit is exceeded
+        except ValidationError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Save the updated note
+        note.save()
+
+        # Serialize the updated note and return the response
+        serializer = NoteSerializer(note)
+        return Response(serializer.data, status=status.HTTP_200_OK)

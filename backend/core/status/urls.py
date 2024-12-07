@@ -3,5 +3,5 @@ from .api import StatusListView, StatusCreateView
 
 urlpatterns = [
     path('', StatusListView.as_view(), name='status-list'),
-    path('create/', StatusCreateView.as_view(), name='create_new_status'),
+    path('create', StatusCreateView.as_view(), name='create_new_status'),
 ]
