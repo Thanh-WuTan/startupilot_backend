@@ -11,32 +11,35 @@ class StartupMembershipSerializer(serializers.ModelSerializer):
 
 
 class StartupSerializer(serializers.ModelSerializer):
-    categories = serializers.SlugRelatedField(
-        many=True,
+    category = serializers.SlugRelatedField(
         slug_field='name',
         queryset=Category.objects.all(),
         required=False,
         allow_null=True
     )
 
-    phase = serializers.SlugRelatedField(
+    phases = serializers.SlugRelatedField(
+        many=True,
         slug_field='name',
         queryset=Phase.objects.all(),
         required=False,
         allow_null=True
     )
+
     status = serializers.SlugRelatedField(
         slug_field='name',
         queryset=Status.objects.all(),
         required=False,
         allow_null=True
     )
+
     priority = serializers.SlugRelatedField(
         slug_field='name',
         queryset=Priority.objects.all(),
         required=False,
         allow_null=True
     )
+
     batch = serializers.SlugRelatedField(
         slug_field='name',
         queryset=Batch.objects.all(),
@@ -58,10 +61,10 @@ class StartupSerializer(serializers.ModelSerializer):
             'short_description',
             'description',
             'email',
-            'categories',
+            'category',
             'linkedin_url',
             'facebook_url',
-            'phase',
+            'phases',
             'status',
             'priority',
             'batch',
@@ -114,17 +117,34 @@ class StartupSerializer(serializers.ModelSerializer):
         ]
     
 class ManyStartupSerializer(serializers.ModelSerializer):
-    categories = serializers.SlugRelatedField(
-        many=True,
+    category = serializers.SlugRelatedField(
         slug_field='name',
         queryset=Category.objects.all(),
         required=False,
         allow_null=True
     )
 
-    phase = serializers.CharField(source='phase.name', read_only=True)
-    status = serializers.CharField(source='status.name', read_only=True)
-    priority = serializers.CharField(source='priority.name', read_only=True)
+    phases = serializers.SlugRelatedField(
+        many=True,
+        slug_field='name',
+        queryset=Phase.objects.all(),
+        required=False,
+        allow_null=True
+    )
+    
+    status = serializers.SlugRelatedField(
+        slug_field='name',
+        queryset=Status.objects.all(),
+        required=False,
+        allow_null=True
+    )
+
+    priority = serializers.SlugRelatedField(
+        slug_field='name',
+        queryset=Priority.objects.all(),
+        required=False,
+        allow_null=True
+    )
 
     batch = serializers.SlugRelatedField(
         slug_field='name',
@@ -141,8 +161,8 @@ class ManyStartupSerializer(serializers.ModelSerializer):
             'short_description',
             'description',
             'email',
-            'categories',
-            'phase',
+            'category',
+            'phases',
             'status',
             'priority',
             'batch',

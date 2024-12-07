@@ -36,15 +36,15 @@ class StartupNoteInline(GenericTabularInline):
         queryset = super().get_queryset(request)
         return queryset.filter(content_type__model='startup') 
 
-class StartupCategoryInline(admin.TabularInline):
-    model = Startup.categories.through
+class StartupPhaseInline(admin.TabularInline):
+    model = Startup.phases.through
     extra = 1
 
 
 class StartupAdmin(admin.ModelAdmin):
-    list_display = ('name', 'phase', 'status', 'priority', 'id')
-    exclude = ('members', 'categories', 'advisors')
-    inlines = [StartupCategoryInline, StartupMembershipInline, AdvisorInline, StartupNoteInline] 
+    list_display = ('name', 'id')
+    exclude = ('members',  'advisors', 'phases')
+    inlines = [StartupPhaseInline, StartupMembershipInline, AdvisorInline, StartupNoteInline] 
 
 admin.site.register(Startup, StartupAdmin)
 

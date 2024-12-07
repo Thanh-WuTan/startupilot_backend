@@ -21,46 +21,38 @@ class CreateStartupView(APIView):
         
         try: 
             with transaction.atomic(): 
-                category_ids = data.get('categories', [])
-                category_ids = list(set(category_ids)) 
-                categories = []
-                for category_id in category_ids:
+                phase_ids = data.get('phases', [])
+                phase_ids = list(set(phase_ids)) 
+                phases = []
+                for phase_id in phase_ids:
                     try:
-                        category = Category.objects.get(id=category_id)
-                        categories.append(category)
-                    except Category.DoesNotExist:
-                        return Response({'error': f'Category with id {category_id} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+                        phase = Phase.objects.get(id=phase_id)
+                        phases.append(phase)
+                    except Phase.DoesNotExist:
+                        return Response({'error': f'Phase with id {phase_id} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
                 try:
-                    # Handle status
                     status_id = data.get('status')
                     status_instance = Status.objects.get(id=status_id) if status_id else None
-
                 except Status.DoesNotExist:
                     return Response({'error': 'Status does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
 
                 try:
-                    # Handle priority
                     priority_id = data.get('priority')
                     priority = Priority.objects.get(id=priority_id) if priority_id else None
-
                 except Priority.DoesNotExist:
                     return Response({'error': 'Priority does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
 
                 try:
-                    # Handle batch
                     batch_id = data.get('batch')
                     batch = Batch.objects.get(id=batch_id) if batch_id else None
-
                 except Batch.DoesNotExist:
                     return Response({'error': 'Batch does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
 
                 try:
-                    # Handle phase
-                    phase_id = data.get('phase')
-                    phase = Phase.objects.get(id=phase_id) if phase_id else None
-
-                except Phase.DoesNotExist:
-                    return Response({'error': 'Phase does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+                    category_id = data.get('category')
+                    category = Category.objects.get(id=category_id) if category_id else None
+                except Category.DoesNotExist:
+                    return Response({'error': 'Category does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
                 # Validate members and create StartupMembership instances
@@ -70,10 +62,8 @@ class CreateStartupView(APIView):
 
                 for member_data in memberships_data:
                     member_id = member_data['id']
-                    
                     if member_id in processed_member_ids:
                         return Response({'error': f'Duplicate member ID {member_id} found.'}, status=status.HTTP_400_BAD_REQUEST)
-
                     try:
                         member = Person.objects.get(id=member_id)
                         # Validate member role and status
@@ -84,7 +74,21 @@ class CreateStartupView(APIView):
                         processed_member_ids.add(member_id)  # Mark this ID as processed
                     except Person.DoesNotExist:
                         return Response({'error': f'Person with id {member_id} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
- 
+
+                
+                mentorship_ids = data.get('mentorships', [])
+                advisors = []
+                processed_advisor_ids = set()  # To track the processed advisor IDs
+
+                for advisor_id in mentorship_ids:
+                    if advisor_id in processed_advisor_ids:
+                        return Response({'error': f'Duplicate advisor ID {advisor_id} found.'}, status=status.HTTP_400_BAD_REQUEST)
+                    try:
+                        advisor = Advisor.objects.get(id=advisor_id)
+                        advisors.append(advisor)
+                        processed_advisor_ids.add(advisor_id)  # Mark this advisor as processed
+                    except Advisor.DoesNotExist:
+                        return Response({'error': f'Advisor with id {advisor_id} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
                 # Create the Startup instance using the serializer
                 startup_data = {
                     'name': data.get('name'),
@@ -99,8 +103,8 @@ class CreateStartupView(APIView):
                     'status': status_instance,  
                     'priority': priority,       
                     'batch': batch,       
-                    'phase': phase,           
-                    'categories': category_ids,   
+                    'phases': phases,           
+                    'category': category,   
                     'memberships': memberships,    
                 }
                 
@@ -114,22 +118,6 @@ class CreateStartupView(APIView):
                     for membership in memberships:
                         membership.startup = startup
                         membership.save()
-                 
-                    # Validate mentorships and assign advisors
-                    mentorship_ids = data.get('mentorships', [])
-                    advisors = []
-                    processed_advisor_ids = set()  # To track the processed advisor IDs
-
-                    for advisor_id in mentorship_ids:
-                        if advisor_id in processed_advisor_ids:
-                            return Response({'error': f'Duplicate advisor ID {advisor_id} found.'}, status=status.HTTP_400_BAD_REQUEST)
-                        
-                        try:
-                            advisor = Advisor.objects.get(id=advisor_id)
-                            advisors.append(advisor)
-                            processed_advisor_ids.add(advisor_id)  # Mark this advisor as processed
-                        except Advisor.DoesNotExist:
-                            return Response({'error': f'Advisor with id {advisor_id} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
 
                     startup.advisors.set(advisors)
                     
