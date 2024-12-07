@@ -42,7 +42,7 @@ class StartupPhaseInline(admin.TabularInline):
 
 
 class StartupAdmin(admin.ModelAdmin):
-    list_display = ('name', 'id')
+    list_display = ('name', 'category', 'batch', 'priority', 'status', 'id')
     exclude = ('members',  'advisors', 'phases')
     inlines = [StartupPhaseInline, StartupMembershipInline, AdvisorInline, StartupNoteInline] 
 

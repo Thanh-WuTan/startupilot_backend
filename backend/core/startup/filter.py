@@ -1,29 +1,17 @@
-from django_filters import rest_framework as filters
-from django.db.models import Count
+import django_filters
+from ..models import Startup
 
-from ..models.startup_model import Startup
+class MultipleValueFilter(django_filters.BaseInFilter, django_filters.CharFilter):
+    pass
 
-class StartupFilter(filters.FilterSet):
-    categories__name = filters.CharFilter(method='filter_categories', distinct=True)
-    status = filters.CharFilter(field_name='status__name', lookup_expr='iexact')
-    phase = filters.CharFilter(field_name='phase__name', lookup_expr='iexact')
-    batch = filters.CharFilter(field_name='batch__name', lookup_expr='iexact')
-    priority = filters.CharFilter(field_name='priority__name', lookup_expr='iexact')
-    category = filters.CharFilter(field_name='categories__name', lookup_expr='iexact')  #
+class StartupFilter(django_filters.FilterSet):
+    phase_names = MultipleValueFilter(field_name='phases__name', lookup_expr='in', distinct=True)
+    category_names = MultipleValueFilter(field_name='category__name', lookup_expr='in', distinct=True)
+    status_names = MultipleValueFilter(field_name='status__name', lookup_expr='in', distinct=True)
+    priority_names = MultipleValueFilter(field_name='priority__name', lookup_expr='in', distinct=True)
+    batch_names = MultipleValueFilter(field_name='batch__name', lookup_expr='in', distinct=True)
+    name = django_filters.CharFilter(field_name='name', lookup_expr='icontains', distinct=True)
+
     class Meta:
         model = Startup
-        fields = ['phase', 'status', 'priority', 'batch', 'category']
-
-    def filter_categories(self, queryset, name, value):
-        # Get all values passed for categories__name as a list
-        categories = list(set(self.request.GET.getlist('category')))
-        if categories:
-            # Filter startups that contain all specified categories
-            return queryset.filter(
-                categories__name__in=categories
-            ).annotate(
-                num_categories=Count('categories')
-            ).filter(
-                num_categories=len(categories)
-            ).distinct()
-        return queryset
+        fields = ['phase_names', 'category_names', 'status_names', 'priority_names', 'batch_names', 'name']

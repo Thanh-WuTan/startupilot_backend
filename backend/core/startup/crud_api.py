@@ -1,16 +1,17 @@
 from rest_framework.response import Response
-from rest_framework import status
-from rest_framework import generics 
+from rest_framework import status 
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .serializers import StartupSerializer, ManyStartupSerializer 
-from django_filters.rest_framework import DjangoFilterBackend
+from .serializers import StartupSerializer, ManyStartupSerializer  
+from rest_framework.generics import ListAPIView
 from rest_framework.filters import SearchFilter
-from .filter import StartupFilter
+from django_filters.rest_framework import DjangoFilterBackend 
+from rest_framework.pagination import PageNumberPagination
 from django.db import transaction
 
 from ..models import Startup, Category, Batch, Priority, Phase, Person, Advisor, Status, Note, StartupMembership
 from .serializers import StartupSerializer
+from .filter import StartupFilter
 
 class CreateStartupView(APIView):
     permission_classes = [IsAuthenticated]
@@ -128,20 +129,21 @@ class CreateStartupView(APIView):
         except Exception as e: 
             return Response({'error': f'Failed to create startup: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
         
-
-class StartupListView(generics.ListAPIView):
-    queryset = Startup.objects.all()
+class StartupListView(ListAPIView):
     permission_classes = [AllowAny]
+    queryset = Startup.objects.all()
     serializer_class = ManyStartupSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = StartupFilter
-    search_fields = ['$name'] 
+    search_fields = ['name']
+    pagination_class = PageNumberPagination
+
 
 class StartupDetailView(APIView):
     """
     Retrieve a startup's details by its primary key (UUID).
     """
-    permission_classes = [AllowAny]  # Adjust permission classes as needed
+    permission_classes = [AllowAny]  
 
     def get(self, request, pk):
         # Fetch the startup instance by its UUID
