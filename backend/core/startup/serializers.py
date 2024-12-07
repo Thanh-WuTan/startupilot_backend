@@ -68,7 +68,6 @@ class StartupSerializer(serializers.ModelSerializer):
             'status',
             'priority',
             'batch',
-            'launch_date',
             'pitch_deck',
             'avatar',
             'notes',

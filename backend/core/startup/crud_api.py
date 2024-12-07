@@ -98,7 +98,6 @@ class CreateStartupView(APIView):
                     'email': data.get('contact_email'),
                     'linkedin_url': data.get('linkedin_url'),
                     'facebook_url': data.get('facebook_url'),
-                    'launch_date': data.get('launch_date'),
                     'pitch_deck': data.get('pitch_deck'),
                     'avatar': data.get('avatar'),
                     'status': status_instance,  

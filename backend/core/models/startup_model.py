@@ -23,7 +23,6 @@ class Startup(models.Model):
     priority = models.ForeignKey(Priority, related_name="startups", on_delete=models.SET_NULL, null=True, blank=True)
     phases = models.ManyToManyField(Phase, related_name="startups", null=True, blank=True)
     batch = models.ForeignKey(Batch, related_name="startups", on_delete=models.CASCADE, null=True, blank=True)
-    launch_date = models.DateField(null=True, blank=True)
     members = models.ManyToManyField(Person, through='StartupMembership', related_name='startups')
     advisors = models.ManyToManyField(Advisor, related_name="startups", blank=True)
     pitch_deck = models.URLField(null=True, blank=True)
