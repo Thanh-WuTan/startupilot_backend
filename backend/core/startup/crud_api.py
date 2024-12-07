@@ -142,7 +142,10 @@ class StartupDetailView(APIView):
     """
     Retrieve a startup's details by its primary key (UUID).
     """
-    permission_classes = [AllowAny]  
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'DELETE']:
+            return [IsAuthenticated()]   
+        return [AllowAny()]   
 
     def get(self, request, pk):
         # Fetch the startup instance by its UUID

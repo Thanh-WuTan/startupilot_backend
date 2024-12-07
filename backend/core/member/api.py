@@ -61,7 +61,10 @@ class MemberDetailView(APIView):
     along with their roles in each startup, categorized as current engagements and past engagements.
     Also includes notes associated with the member.
     """
-    permission_classes = [AllowAny]
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'DELETE']:
+            return [IsAuthenticated()]   
+        return [AllowAny()]   
 
     
     def get(self, request, pk):

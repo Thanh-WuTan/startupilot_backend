@@ -56,7 +56,10 @@ class CategoryDetailView(APIView):
     """
     Retrieve a category's details by its primary key (UUID).
     """
-    permission_classes = [AllowAny]  # Adjust permission classes as needed
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'DELETE']:
+            return [IsAuthenticated()]   
+        return [AllowAny()]   
 
     def get(self, request, pk): 
         category = get_object_or_404(Category, pk=pk)

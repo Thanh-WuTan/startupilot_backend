@@ -59,7 +59,7 @@ class NoteDetailView(APIView):
     """
     Retrieve a note's details by its primary key (UUID).
     """
-    permission_classes = [AllowAny]  # Adjust permission classes as needed
+    permission_classes = [IsAuthenticated]  # Adjust permission classes as needed
 
     def get(self, request, pk):
         # Fetch the note instance by its UUID
