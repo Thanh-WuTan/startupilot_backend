@@ -1,10 +1,11 @@
 from django.urls import path
 
-from .crud_api import StartupListView, StartupDetailView, CreateStartupView
+from .api import StartupListView, StartupDetailView, CreateStartupView, StartupExportView
 
 urlpatterns = [
     path('', StartupListView.as_view(), name='startups-list'),
     path('<uuid:pk>', StartupDetailView.as_view(), name='startup-detail'),
     path('create', CreateStartupView.as_view(), name='startup-create'),
+    path('api/startups/export/', StartupExportView.as_view(), name='startup-export'),
 ]
 

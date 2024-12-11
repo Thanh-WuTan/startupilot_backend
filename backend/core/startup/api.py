@@ -179,4 +179,82 @@ class StartupDetailView(APIView):
         if not startup:
             return Response({"detail": "Startup not found."}, status=status.HTTP_404_NOT_FOUND)
         
-        
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
+from django.http import HttpResponse
+from openpyxl import Workbook
+from io import BytesIO
+
+class StartupExportView(APIView):
+    permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_class = StartupFilter
+    search_fields = ['name']
+
+    def get(self, request):
+        # Get filter parameters
+        filters = StartupFilter(request.GET, queryset=Startup.objects.all())
+        if not filters.is_valid():
+            return Response({"detail": "Invalid filters."}, status=400)
+
+        # Get filtered queryset
+        startups = filters.qs
+
+        # Get selected columns from query parameters
+        columns_param = request.GET.get('columns', None)
+        all_columns = [
+            'id', 'name', 'short_description', 'description', 'email', 'category',
+            'linkedin_url', 'facebook_url', 'phases', 'status', 'priority', 
+            'batch', 'pitch_deck', 'avatar'
+        ]
+        columns = columns_param.split(',') if columns_param else all_columns
+
+        # Validate requested columns
+        invalid_columns = [col for col in columns if col not in all_columns]
+        if invalid_columns:
+            return Response({"detail": f"Invalid columns: {', '.join(invalid_columns)}"}, status=400)
+
+        # Create Excel file
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Startups"
+
+        # Write headers
+        ws.append(columns)
+
+        # Write data
+        for startup in startups:
+            row = []
+            for col in columns:
+                # Handle related fields (e.g., categories, phases) or callables
+                if col == 'category':
+                    row.append(', '.join([cat.name for cat in startup.category.all()]))
+                elif col == 'phases':
+                    row.append(', '.join([phase.name for phase in startup.phases.all()]))
+                elif col == 'status':
+                    row.append(startup.status.name if startup.status else "")
+                elif col == 'priority':
+                    row.append(startup.priority.name if startup.priority else "")
+                elif col == 'batch':
+                    row.append(startup.batch.name if startup.batch else "")
+                elif col == 'pitch_deck':
+                    row.append(startup.pitch_deck.url if startup.pitch_deck else "")
+                else:
+                    row.append(getattr(startup, col, ""))
+            ws.append(row)
+
+        # Save to BytesIO
+        buffer = BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+
+        # Create response
+        response = HttpResponse(
+            buffer,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response['Content-Disposition'] = 'attachment; filename=startups_export.xlsx'
+        return response
