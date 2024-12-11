@@ -7,11 +7,15 @@ from rest_framework.generics import ListAPIView
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend 
 from rest_framework.pagination import PageNumberPagination
+from openpyxl import Workbook
+from io import BytesIO
 from django.db import transaction
-
 from ..models import Startup, Category, Batch, Priority, Phase, Person, Advisor, Status, Note, StartupMembership
 from .serializers import StartupSerializer
 from .filter import StartupFilter
+from django.http import HttpResponse
+
+import uuid
 
 class CreateStartupView(APIView):
     permission_classes = [IsAuthenticated]
@@ -178,15 +182,8 @@ class StartupDetailView(APIView):
         
         if not startup:
             return Response({"detail": "Startup not found."}, status=status.HTTP_404_NOT_FOUND)
-        
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter
-from django.http import HttpResponse
-from openpyxl import Workbook
-from io import BytesIO
+ 
+
 
 class StartupExportView(APIView):
     permission_classes = [AllowAny]
@@ -195,58 +192,64 @@ class StartupExportView(APIView):
     search_fields = ['name']
 
     def get(self, request):
-        # Get filter parameters
+        # Apply filters
         filters = StartupFilter(request.GET, queryset=Startup.objects.all())
         if not filters.is_valid():
             return Response({"detail": "Invalid filters."}, status=400)
 
-        # Get filtered queryset
+        # Get filtered startups
         startups = filters.qs
 
-        # Get selected columns from query parameters
+        # Parse 'columns' parameter
         columns_param = request.GET.get('columns', None)
         all_columns = [
-            'id', 'name', 'short_description', 'description', 'email', 'category',
-            'linkedin_url', 'facebook_url', 'phases', 'status', 'priority', 
-            'batch', 'pitch_deck', 'avatar'
+            'id', 'name', 'short_description', 'description', 'email', 
+            'linkedin_url', 'facebook_url', 'category', 'status', 'priority',
+            'phases', 'batch', 'members', 'advisors', 'pitch_deck', 'avatar'
         ]
         columns = columns_param.split(',') if columns_param else all_columns
 
-        # Validate requested columns
+        # Validate columns
         invalid_columns = [col for col in columns if col not in all_columns]
         if invalid_columns:
             return Response({"detail": f"Invalid columns: {', '.join(invalid_columns)}"}, status=400)
 
-        # Create Excel file
+        # Create Excel workbook
         wb = Workbook()
         ws = wb.active
         ws.title = "Startups"
 
-        # Write headers
+        # Add headers
         ws.append(columns)
 
-        # Write data
+        # Add data rows
         for startup in startups:
             row = []
             for col in columns:
-                # Handle related fields (e.g., categories, phases) or callables
-                if col == 'category':
-                    row.append(', '.join([cat.name for cat in startup.category.all()]))
-                elif col == 'phases':
-                    row.append(', '.join([phase.name for phase in startup.phases.all()]))
+                # Handle special fields
+                if col == 'id':
+                    row.append(str(startup.id))  # Convert UUID to string
+                elif col == 'category':
+                    row.append(startup.category.name if startup.category else "")
                 elif col == 'status':
                     row.append(startup.status.name if startup.status else "")
                 elif col == 'priority':
                     row.append(startup.priority.name if startup.priority else "")
+                elif col == 'phases':
+                    row.append(', '.join([phase.name for phase in startup.phases.all()]))
                 elif col == 'batch':
                     row.append(startup.batch.name if startup.batch else "")
-                elif col == 'pitch_deck':
-                    row.append(startup.pitch_deck.url if startup.pitch_deck else "")
+                elif col == 'members':
+                    row.append(', '.join([member.name for member in startup.members.all()]))
+                elif col == 'advisors':
+                    row.append(', '.join([advisor.name for advisor in startup.advisors.all()]))
                 else:
-                    row.append(getattr(startup, col, ""))
+                    value = getattr(startup, col, "")
+                    row.append(value if not isinstance(value, uuid.UUID) else str(value))  # Convert UUID to string
+
             ws.append(row)
 
-        # Save to BytesIO
+        # Save workbook to BytesIO
         buffer = BytesIO()
         wb.save(buffer)
         buffer.seek(0)
