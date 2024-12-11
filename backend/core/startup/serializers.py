@@ -96,7 +96,8 @@ class StartupSerializer(serializers.ModelSerializer):
                 'member': {
                     'id': membership.person.id,
                     'name': membership.person.name,
-                    'email': membership.person.email
+                    'email': membership.person.email,
+                    'avatar': membership.person.avatar
                 },
                 'status': membership.status,
                 'roles': membership.role
