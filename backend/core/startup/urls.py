@@ -6,6 +6,6 @@ urlpatterns = [
     path('', StartupListView.as_view(), name='startups-list'),
     path('<uuid:pk>', StartupDetailView.as_view(), name='startup-detail'),
     path('create', CreateStartupView.as_view(), name='startup-create'),
-    path('api/startups/export/', StartupExportView.as_view(), name='startup-export'),
+    path('export', StartupExportView.as_view(), name='startup-export'),
 ]
 
