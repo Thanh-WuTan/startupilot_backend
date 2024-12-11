@@ -9,6 +9,10 @@ class Phase(models.Model):
     class Meta:
         verbose_name = 'Phase'
         verbose_name_plural = 'Phases'
+    
+    def save(self, *args, **kwargs):
+        self.name = ' '.join(self.name.strip().split())
+        super().save(*args, **kwargs)  
 
     def __str__(self):
         return self.name

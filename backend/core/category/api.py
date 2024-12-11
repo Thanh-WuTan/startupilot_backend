@@ -33,7 +33,7 @@ class CategoryCreateView(APIView):
 
     def post(self, request):
         # Get the 'name' from the request data
-        name = ' '.join(request.data.get('name', '').strip().lower().split())
+        name = ' '.join(request.data.get('name', '').strip().split())
 
         print (name)
         if not name:

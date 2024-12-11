@@ -29,16 +29,20 @@ class BatchCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # Extract and clean the name from the request data
-        name = ' '.join(request.data.get('name', '').strip().lower().split())
+        # Initialize the serializer with the request data
+        serializer = BatchSerializer(data=request.data)
 
-        # Check if a batch with the same name already exists
-        if Batch.objects.filter(name=name).exists():
-            return Response({'detail': 'A batch with this name already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+        # Validate the data
+        if serializer.is_valid():
+            # Ensure the batch name is cleaned and check for duplicates
+            name = ' '.join(serializer.validated_data.get('name', '').strip().split())
+            if Batch.objects.filter(name=name).exists():
+                return Response({'detail': 'A batch with this name already exists.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Create a new batch
-        batch_instance = Batch.objects.create(name=name)
+            # Save the new batch
+            serializer.save(name=name)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        # Serialize and return the new batch
-        serializer = BatchSerializer(batch_instance)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # Return errors if the data is invalid
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

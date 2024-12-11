@@ -25,7 +25,7 @@ class PhaseCreateView(APIView):
 
     def post(self, request):
         # Extract and clean the name from the request data
-        name = ' '.join(request.data.get('name', '').strip().lower().split())
+        name = ' '.join(request.data.get('name', '').strip().split())
         
         # Check if a phase with the same name already exists
         if Phase.objects.filter(name=name).exists():
