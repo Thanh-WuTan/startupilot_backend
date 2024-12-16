@@ -66,3 +66,54 @@ class AdvisorDetailView(APIView):
         advisor = get_object_or_404(Advisor, pk=pk)
         serializer = AdvisorSerializer(advisor)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def delete(self, request, pk):
+        """
+        Delete an advisor by their primary key.
+        """
+        advisor = get_object_or_404(Advisor, pk=pk)
+
+        # Check if the advisor is linked to any startups
+        if advisor.startups.exists():
+            return Response(
+                {'detail': 'Cannot delete advisor because they are linked to startups.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        advisor.delete()
+        return Response({'detail': 'Advisor deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+
+    def put(self, request, pk):
+        """
+        Update advisor information.
+        """
+        advisor = get_object_or_404(Advisor, pk=pk)
+        data = request.data
+
+        # Validate name field
+        name = data.get('name', '').strip()
+        if not name:
+            return Response({'detail': 'Name is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        email = data.get('email', '').strip()
+        shorthand = f"{name}({email})" if email else name
+
+        # Check for duplicate shorthand
+        if Advisor.objects.filter(shorthand=shorthand).exclude(pk=pk).exists():
+            return Response(
+                {'detail': f'Another advisor with shorthand "{shorthand}" already exists.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Update the advisor instance
+        advisor.name = name
+        advisor.email = email
+        advisor.phone = data.get('phone', advisor.phone)
+        advisor.linkedin_url = data.get('linkedin_url', advisor.linkedin_url)
+        advisor.facebook_url = data.get('facebook_url', advisor.facebook_url)
+        advisor.area_of_expertise = data.get('area_of_expertise', advisor.area_of_expertise)
+        advisor.avatar = data.get('avatar', advisor.avatar)
+
+        advisor.save()
+        serializer = AdvisorSerializer(advisor)
+        return Response(serializer.data, status=status.HTTP_200_OK)
