@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
+from django.shortcuts import get_object_or_404
 
 from ..models.batch_model import Batch
 from .serializers import BatchSerializer
@@ -46,3 +47,50 @@ class BatchCreateView(APIView):
         # Return errors if the data is invalid
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class BatchDetailView(APIView):
+    """
+    Retrieve, update, or delete batch information by its primary key (UUID).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        """
+        View batch details by ID.
+        """
+        batch = get_object_or_404(Batch, pk=pk)
+        serializer = BatchSerializer(batch)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, pk):
+        """
+        Update batch information.
+        """
+        batch = get_object_or_404(Batch, pk=pk)
+        serializer = BatchSerializer(batch, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            # Ensure the updated name is unique (if provided)
+            name = serializer.validated_data.get('name', None)
+            if name:
+                cleaned_name = ' '.join(name.strip().split())
+                if Batch.objects.filter(name=cleaned_name).exclude(pk=pk).exists():
+                    return Response({'detail': 'A batch with this name already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+                serializer.validated_data['name'] = cleaned_name
+
+            # Save the updates
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        """
+        Delete a batch by its primary key.
+        """
+        batch = get_object_or_404(Batch, pk=pk)
+
+        # Delete the batch instance
+        batch.delete()
+        return Response({'detail': 'Batch deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
