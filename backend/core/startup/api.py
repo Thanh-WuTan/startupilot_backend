@@ -188,16 +188,16 @@ class StartupDetailView(APIView):
         
         try:
             with transaction.atomic():
-                # Update categories
-                category_ids = data.get('categories', [])
-                category_ids = list(set(category_ids))
-                categories = []
-                for category_id in category_ids:
+                # Update phases 
+                phase_ids = data.get('phases', [])
+                phase_ids = list(set(phase_ids))
+                phases = []
+                for phase_id in phase_ids:
                     try:
-                        category = Category.objects.get(id=category_id)
-                        categories.append(category)
-                    except Category.DoesNotExist:
-                        return Response({'error': f'Category with id {category_id} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+                        phase = Phase.objects.get(id=phase_id)
+                        phases.append(phase)
+                    except Phase.DoesNotExist:
+                        return Response({'error': f'Phase with id {phase_id} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)    
                 
                 # Update status
                 status_id = data.get('status')
@@ -220,12 +220,12 @@ class StartupDetailView(APIView):
                 except Batch.DoesNotExist:
                     return Response({'error': 'Batch does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
                 
-                # Update phase
-                phase_id = data.get('phase')
+                # Update category
+                category_id = data.get('category')
                 try:
-                    phase = Phase.objects.get(id=phase_id) if phase_id else None
-                except Phase.DoesNotExist:
-                    return Response({'error': 'Phase does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+                    category = Category.objects.get(id=category_id) if category_id else None
+                except Category.DoesNotExist:
+                    return Response({'error': 'Category does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
 
                 # Update memberships
                 memberships_data = data.get('memberships', [])
