@@ -59,7 +59,6 @@ class CreateStartupView(APIView):
                 except Category.DoesNotExist:
                     return Response({'error': 'Category does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
 
-
                 # Validate members and create StartupMembership instances
                 memberships_data = data.get('memberships', [])
                 memberships = []
@@ -80,7 +79,6 @@ class CreateStartupView(APIView):
                     except Person.DoesNotExist:
                         return Response({'error': f'Person with id {member_id} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
 
-                
                 mentorship_ids = data.get('mentorships', [])
                 advisors = []
                 processed_advisor_ids = set()  # To track the processed advisor IDs
@@ -94,6 +92,7 @@ class CreateStartupView(APIView):
                         processed_advisor_ids.add(advisor_id)  # Mark this advisor as processed
                     except Advisor.DoesNotExist:
                         return Response({'error': f'Advisor with id {advisor_id} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+                
                 # Create the Startup instance using the serializer
                 startup_data = {
                     'name': data.get('name'),
@@ -141,7 +140,6 @@ class StartupListView(ListAPIView):
     search_fields = ['name']
     pagination_class = PageNumberPagination
     ordering_fields = ['batch__name', 'priority__name', 'name']
-
 
 class StartupDetailView(APIView):
     """
@@ -271,19 +269,18 @@ class StartupDetailView(APIView):
                 startup.email = data.get('contact_email', startup.email)
                 startup.linkedin_url = data.get('linkedin_url', startup.linkedin_url)
                 startup.facebook_url = data.get('facebook_url', startup.facebook_url)
-                startup.launch_date = data.get('launch_date', startup.launch_date)
                 startup.pitch_deck = data.get('pitch_deck', startup.pitch_deck)
                 startup.avatar = data.get('avatar', startup.avatar)
                 startup.status = status_instance
                 startup.priority = priority
                 startup.batch = batch
-                startup.phase = phase
+                startup.category = category
 
                 # Save the updated startup instance
                 startup.save()
 
                 # Update categories and advisors
-                startup.categories.set(categories)
+                startup.phases.set(phases)
                 startup.advisors.set(advisors)
 
                 # Update memberships
