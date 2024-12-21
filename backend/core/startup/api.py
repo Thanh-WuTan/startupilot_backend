@@ -98,6 +98,7 @@ class CreateStartupView(APIView):
                     'name': data.get('name'),
                     'short_description': data.get('short_description'),
                     'description': data.get('description'),
+                    'location': data.get('location'),
                     'email': data.get('contact_email'),
                     'linkedin_url': data.get('linkedin_url'),
                     'facebook_url': data.get('facebook_url'),
@@ -266,6 +267,7 @@ class StartupDetailView(APIView):
                 startup.name = data.get('name', startup.name)
                 startup.short_description = data.get('short_description', startup.short_description)
                 startup.description = data.get('description', startup.description)
+                startup.location = data.get('location', startup.location)
                 startup.email = data.get('contact_email', startup.email)
                 startup.linkedin_url = data.get('linkedin_url', startup.linkedin_url)
                 startup.facebook_url = data.get('facebook_url', startup.facebook_url)
@@ -313,7 +315,7 @@ class StartupExportView(APIView):
         # Parse 'columns' parameter
         columns_param = request.GET.get('columns', None)
         all_columns = [
-            'id', 'name', 'short_description', 'description', 'email', 
+            'id', 'name', 'short_description', 'description', 'location', 'email', 
             'linkedin_url', 'facebook_url', 'category', 'status', 'priority',
             'phases', 'batch', 'members', 'advisors', 'pitch_deck', 'avatar'
         ]
