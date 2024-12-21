@@ -112,7 +112,8 @@ class StartupSerializer(serializers.ModelSerializer):
         return [
             {
                 'id': advisor.id,
-                'name': advisor.name
+                'name': advisor.name,
+                'avatar': advisor.avatar,
             }
             for advisor in advisors
         ]
