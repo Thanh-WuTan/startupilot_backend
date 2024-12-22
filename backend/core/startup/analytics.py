@@ -53,8 +53,8 @@ class StartupAnalyticsView(APIView):
                 batch_data[category.name] = category_status_data
 
             batch_data['Total'] = {
-                category.name: queryset.filter(batch=batch, category=category).count()
-                for category in categories
+                status.name: queryset.filter(batch=batch, status=status).count()
+                for status in statuses
             }
             batches_count[batch.name] = batch_data
 
@@ -68,8 +68,8 @@ class StartupAnalyticsView(APIView):
             batch_data[category.name] = category_status_data
         
         batch_data['Total'] = {
-            category.name: queryset.filter(category=category).count()
-            for category in categories
+            status.name: queryset.filter(status=status).count()
+            for status in statuses
         }
         batches_count['Total'] = batch_data
 
