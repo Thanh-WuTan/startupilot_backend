@@ -15,17 +15,12 @@ class StartupAnalyticsView(APIView):
         # Apply the StartupFilter to dynamically filter startups based on query parameters
         queryset = StartupFilter(request.GET, queryset=Startup.objects.all()).qs
 
-        # Aggregating category-wise data
+        # All categories
         categories = Category.objects.annotate(
             count=Count('startups', filter=Q(startups__in=queryset))
         )
-        categories_count = {}
-        for category in categories:
-            categories_count[category.name] = {
-                'count': category.count,
-            }
 
-        # Aggregating dynamic status data
+        # All statuses
         statuses = Status.objects.all()
 
         # Aggregating dynamic priority data
@@ -55,16 +50,7 @@ class StartupAnalyticsView(APIView):
                         batch=batch, category=category, status=status
                     ).count()
 
-                category_priority_data = {}
-                for priority in priorities:
-                    category_priority_data[priority.name] = queryset.filter(
-                        batch=batch, category=category, priority=priority
-                    ).count()
-
-                batch_data[category.name] = {
-                    'status': category_status_data,
-                    'priority': category_priority_data,
-                }
+                batch_data[category.name] = category_status_data
 
             batch_data['Total'] = {
                 category.name: queryset.filter(batch=batch, category=category).count()
@@ -72,39 +58,41 @@ class StartupAnalyticsView(APIView):
             }
             batches_count[batch.name] = batch_data
 
+        batch_data = {}
+        for category in categories:
+            category_status_data = {}
+            for status in statuses:
+                category_status_data[status.name] = queryset.filter(
+                    category=category, status=status
+                ).count()
+            batch_data[category.name] = category_status_data
+        
+        batch_data['Total'] = {
+            category.name: queryset.filter(category=category).count()
+            for category in categories
+        }
+        batches_count['Total'] = batch_data
+
         # Aggregating phase-wise data
         phases = Phase.objects.all()
         phases_count = {}
         for batch in batches:
             phase_data = {}
             for phase in phases:
-                phase_status_data = {}
-                for status in statuses:
-                    phase_status_data[status.name] = queryset.filter(
-                        batch=batch, phases=phase, status=status
-                    ).count()
                 phase_data[phase.name] = {
-                    'status': phase_status_data,
                     'count': queryset.filter(batch=batch, phases=phase).count()
                 }
             phases_count[batch.name] = phase_data
 
         phase_data = {}
         for phase in phases:
-            phase_status_data = {}
-            for status in statuses:
-                phase_status_data[status.name] = queryset.filter(
-                    phases=phase, status=status
-                ).count()
             phase_data[phase.name] = {
-                'status': phase_status_data,
                 'count': queryset.filter(phases=phase).count()
             }
         phases_count['Total'] = phase_data
 
         # Final JSON structure
         startup_data = {
-            'categories_count': categories_count,
             'priority_count': priority_count,
             'batches_count': batches_count,
             'phases_count': phases_count,
