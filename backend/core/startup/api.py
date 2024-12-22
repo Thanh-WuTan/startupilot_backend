@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .serializers import StartupSerializer, ManyStartupSerializer  
 from rest_framework.generics import ListAPIView
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend 
 from rest_framework.pagination import PageNumberPagination
 from openpyxl import Workbook
@@ -136,11 +136,11 @@ class StartupListView(ListAPIView):
     permission_classes = [AllowAny]
     queryset = Startup.objects.all()
     serializer_class = ManyStartupSerializer
-    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = StartupFilter
     search_fields = ['name']
     pagination_class = PageNumberPagination
-    ordering_fields = ['batch__name', 'priority__name', 'name']
+    ordering_fields = ['name', 'batch__name', 'priority__name']
 
 class StartupDetailView(APIView):
     """
