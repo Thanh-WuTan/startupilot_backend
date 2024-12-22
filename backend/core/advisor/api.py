@@ -60,7 +60,10 @@ class AdvisorDetailView(APIView):
     """
     Retrieve the details of a specific advisor by their primary key (UUID).
     """
-    permission_classes = [AllowAny]  # Adjust permission classes as needed
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'DELETE']:
+            return [IsAuthenticated]   
+        return [AllowAny]
 
     def get(self, request, pk):
         advisor = get_object_or_404(Advisor, pk=pk)
