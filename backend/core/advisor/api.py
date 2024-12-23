@@ -62,8 +62,8 @@ class AdvisorDetailView(APIView):
     """
     def get_permissions(self):
         if self.request.method in ['PUT', 'DELETE']:
-            return [IsAuthenticated]   
-        return [AllowAny]
+            return [IsAuthenticated()]   
+        return [AllowAny()]
 
     def get(self, request, pk):
         advisor = get_object_or_404(Advisor, pk=pk)
